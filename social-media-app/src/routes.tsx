@@ -1,33 +1,30 @@
-import React from 'react';
-import { Navigate, RouteObject } from 'react-router-dom';
-import { Outlet } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
+import React from "react";
+import { Navigate, RouteObject } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
 
 // Page Components
-import  Home  from './pages/home';
-import Login  from './pages/login';
-import Signup  from './pages/signup';
-import AddComment from './pages/add_comment';
-import AddPost from './pages/add_post';
-import ChangePassword from './pages/change-password';
-import CreateUserProfile from './pages/create_user_profile';
-import DeletePost from './pages/delete_post';
-import EditProfilePage from './pages/edit_profile_page';
-import  Friends  from './pages/friends';
-import OtherProfile from './pages/Otherprofile';
-import PasswordSuccess from './pages/password_success';
-import Search  from './pages/search';
-import UpdatePost from './pages/update_post';
-import  NotFound  from './pages/404';
+import Home from "./pages/home";
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import AddComment from "./pages/add_comment";
+import AddPost from "./pages/add_post";
+import ChangePassword from "./pages/change-password";
+import CreateUserProfile from "./pages/create_user_profile";
+import DeletePost from "./pages/delete_post";
+import EditProfilePage from "./pages/edit_profile_page";
+import Friends from "./pages/friends";
+import OtherProfile from "./pages/Otherprofile";
+import PasswordSuccess from "./pages/password_success";
+import Search from "./pages/search";
+import UpdatePost from "./pages/update_post";
+import NotFound from "./pages/404";
+import Dashboard from "./pages/dashboard"; // ✅ Import Dashboard
 
 // Layout Components
-import { Navigation } from './components/layout/Navigation';
+import { Navigation } from "./components/layout/Navigation";
 
 // Type Definitions
-interface NavigationProps {
-  children: React.ReactNode;
-}
-
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -36,50 +33,36 @@ interface PublicRouteProps {
   children: React.ReactNode;
 }
 
-// Navigation Component with Outlet
-const NavigationWithOutlet: React.FC = () => {
-  return (
-    <Navigation>
-      <Outlet />
-    </Navigation>
-  );
-};
+// Navigation Wrapper
+const NavigationWithOutlet: React.FC = () => (
+  <Navigation>
+    <Outlet />
+  </Navigation>
+);
 
-// Protected Route Wrapper Component
+// Protected Route Wrapper (Requires Authentication)
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <div>Loading...</div>; // Consider using a proper loading component
-  }
+  if (isLoading) return <div>Loading...</div>;
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-// Public Route Wrapper Component (accessible only when not logged in)
+// Public Route Wrapper (Accessible only when NOT logged in)
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <div>Loading...</div>; // Consider using a proper loading component
-  }
+  if (isLoading) return <div>Loading...</div>;
 
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
+  return user ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
 // Main Routes Configuration
 export const routes: RouteObject[] = [
-  // Public Routes
+  // Public Routes (Login & Signup)
   {
-    path: '/login',
+    path: "/login",
     element: (
       <PublicRoute>
         <Login />
@@ -87,7 +70,7 @@ export const routes: RouteObject[] = [
     ),
   },
   {
-    path: '/signup',
+    path: "/signup",
     element: (
       <PublicRoute>
         <Signup />
@@ -95,85 +78,58 @@ export const routes: RouteObject[] = [
     ),
   },
   {
-    path: '/password-success',
+    path: "/password-success",
     element: <PasswordSuccess />,
   },
 
-  // Protected Routes (with Navigation Layout)
+  // Protected Routes (Require Authentication)
   {
-    path: '/',
+    path: "/",
     element: (
       <ProtectedRoute>
         <NavigationWithOutlet />
       </ProtectedRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: 'friends',
-        element: <Friends />,
-      },
-      {
-        path: 'search',
-        element: <Search />,
-      },
-      {
-        path: 'post',
-        children: [
-          {
-            path: 'create',
-            element: <AddPost />,
-          },
-          {
-            path: 'edit/:postId',
-            element: <UpdatePost />,
-          },
-          {
-  path: 'delete/:postId',
-  element: <DeletePost postId={undefined} onClose={() => {}} />,
-},
+      { index: true, element: <Home /> },
+      { path: "dashboard", element: <Dashboard /> }, // ✅ Added Dashboard Route
+      { path: "friends", element: <Friends /> },
+      { path: "search", element: <Search /> },
 
-          {
-  path: ':postId/comment',
-  element: <AddComment onCommentAdded={() => {}} />, // Pass a dummy function
-},
+      // Post Routes
+      {
+        path: "post",
+        children: [
+          { path: "create", element: <AddPost /> },
+          { path: "edit/:postId", element: <UpdatePost /> },
+          { path: "delete/:postId", element: <DeletePost /> },
+          { path: ":postId/comment", element: <AddComment /> },
         ],
       },
+
+      // Profile Routes
       {
-        path: 'profile',
+        path: "profile",
         children: [
-          {
-            path: 'create',
-            element: <CreateUserProfile />,
-          },
-          {
-            path: 'edit',
-            element: <EditProfilePage />,
-          },
-          {
-            path: ':userId',
-            element: <OtherProfile />,
-          },
+          { path: "create", element: <CreateUserProfile /> },
+          { path: "edit", element: <EditProfilePage /> },
+          { path: ":userId", element: <OtherProfile /> },
         ],
       },
+
+      // Settings Routes
       {
-        path: 'settings',
+        path: "settings",
         children: [
-          {
-            path: 'change-password',
-            element: <ChangePassword />,
-          },
+          { path: "change-password", element: <ChangePassword /> },
         ],
       },
     ],
   },
 
-  // 404 Route
+  // 404 Page (Not Found)
   {
-    path: '*',
+    path: "*",
     element: <NotFound />,
   },
 ];
@@ -187,14 +143,13 @@ export interface RouteConfig {
 
 // Helper function to generate breadcrumbs
 export const getBreadcrumbs = (pathname: string): { label: string; path: string }[] => {
-  const paths = pathname.split('/').filter(Boolean);
+  const paths = pathname.split("/").filter(Boolean);
   return paths.map((path, index) => {
-    const fullPath = `/${paths.slice(0, index + 1).join('/')}`;
-    // Convert path to breadcrumb label (e.g., 'create-post' -> 'Create Post')
+    const fullPath = `/${paths.slice(0, index + 1).join("/")}`;
     const label = path
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
     return { label, path: fullPath };
   });
 };

@@ -37,7 +37,6 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
         <AuthProvider>
           <div className="min-h-screen bg-gray-50">
             <AppContent />
@@ -56,7 +55,6 @@ const App: React.FC = () => {
             />
           </div>
         </AuthProvider>
-      </BrowserRouter>
     </QueryClientProvider>
   );
 };
