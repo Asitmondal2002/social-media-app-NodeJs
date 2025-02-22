@@ -1,0 +1,38 @@
+version: '3.8'
+
+networks:
+  app_network:  # Custom network for backend and database
+    driver: bridge
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app_network  # Attach to the custom network
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongo  # Connect using the service name
+    ports:
+      - "8081:8081"
+    networks:
+      - app_network  # Attach to the same network
+
+volumes:
+  mongo_data:
