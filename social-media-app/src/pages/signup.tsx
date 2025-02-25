@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config/config';
 
@@ -58,7 +58,15 @@ const Signup = () => {
       });
 
       console.log('✅ Signup successful:', response.data);
-      navigate('/login');
+      
+      // Store auth token if provided
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      
+      // Force navigation to dashboard
+      navigate('/dashboard', { replace: true });
+      
     } catch (err) {
       const error = err as AxiosError<{ message: string; error?: string }>;
       console.error('❌ Signup Error:', error.response?.data);
@@ -154,9 +162,9 @@ const Signup = () => {
 
         <div className="text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
             Login
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -164,3 +172,4 @@ const Signup = () => {
 };
 
 export default Signup;
+
