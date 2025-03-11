@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Post Form</title>
+</head>
+<body>
+  <h1>Test Post Form</h1>
+  <form action="http://localhost:5000/api/posts" method="post" enctype="multipart/form-data">
+    <div>
+      <label for="content">Content:</label>
+      <textarea name="content" id="content" rows="4" required></textarea>
+    </div>
+    <div>
+      <label for="image">Image:</label>
+      <input type="file" name="image" id="image" accept="image/*">
+    </div>
+    <div>
+      <button type="submit">Submit Post</button>
+    </div>
+  </form>
+</body>
+</html> 

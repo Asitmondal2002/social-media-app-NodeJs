@@ -22,6 +22,7 @@ import UpdatePost from "./pages/update_post";
 import NotFound from "./pages/404";
 import Dashboard from "./pages/dashboard"; // ✅ Dashboard Component
 import Profile from './pages/Profile';
+import FullPost from './pages/FullPost';
 
 // Layout Components
 import Navigation from "./components/layout/Navigation";
@@ -140,6 +141,10 @@ export const routes = [
   {
     path: '/create-post',
     element: <Navigation><CreatePostComponent /></Navigation>,
+  },
+  {
+    path: '/post/:postId',
+    element: <Navigation><FullPost /></Navigation>,
   },
 ];
 
