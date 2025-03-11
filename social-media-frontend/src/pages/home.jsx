@@ -1,86 +1,67 @@
-// home.jsx
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
-import api from "../services/api";
+import { useEffect, useState } from "react";
+import { FaHeart, FaComment, FaShare } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import api from "../services/api";
+import defaultAvatar from "../assets/img/fb.png"; // Default avatar image
+import { Loader } from "../components/common/Loader";
 
 const Home = () => {
-  const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/api/posts');
+        setPosts(response.data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setError('Failed to load posts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPosts();
   }, []);
 
-  const fetchPosts = async () => {
-    try {
-      const response = await api.get("/posts", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setPosts(response.data);
-    } catch (error) {
-      toast.error("Failed to load posts.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLike = async (postId) => {
-    try {
-      await api.post(
-        `/posts/${postId}/like`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setPosts(
-        posts.map((post) =>
-          post.id === postId ? { ...post, likes: post.likes + 1 } : post
-        )
-      );
-      toast.success("Liked!");
-    } catch (error) {
-      toast.error("Failed to like post.");
-    }
-  };
-
   return (
-    <div className="home-container">
-      <h2>Home Feed</h2>
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Recent Posts</h1>
+      
       {loading ? (
-        <p>Loading posts...</p>
+        <div className="flex justify-center py-8">
+          <Loader size="large" />
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 text-red-700 p-4 rounded-md">
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-2 text-sm underline"
+          >
+            Try again
+          </button>
+        </div>
       ) : posts.length > 0 ? (
-        <ul className="posts-list">
-          {posts.map((post) => (
-            <li key={post.id} className="post-item">
-              <div className="post-header">
-                <img
-                  src={post.user.avatar || "/default-avatar.png"}
-                  alt={post.user.name}
-                  className="post-avatar"
-                />
-                <Link to={`/profile/${post.user.id}`} className="post-author">
-                  {post.user.name}
-                </Link>
-              </div>
-              <p className="post-content">{post.content}</p>
-              {post.image && (
-                <img src={post.image} alt="Post" className="post-image" />
-              )}
-              <div className="post-actions">
-                <button onClick={() => handleLike(post.id)}>
-                  ❤️ {post.likes}
-                </button>
-                <Link to={`/post/${post.id}`}>💬 {post.comments} Comments</Link>
-              </div>
-            </li>
+        <div className="space-y-6">
+          {posts.map(post => (
+            <PostCard 
+              key={post._id} 
+              post={post} 
+              onLike={() => {}} 
+              onComment={() => {}} 
+            />
           ))}
-        </ul>
+        </div>
       ) : (
-        <p>No posts yet. Start following people to see updates!</p>
+        <div className="text-center py-8 text-gray-500">
+          <p>No posts found. Be the first to create a post!</p>
+        </div>
       )}
     </div>
   );

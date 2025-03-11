@@ -1,7 +1,8 @@
-// src/routes.jsx
 import { Navigate, useLocation } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { lazy } from 'react';
+import React from 'react';
 
 // Page Components
 import Home from "./pages/home";
@@ -19,44 +20,56 @@ import PasswordSuccess from "./pages/password_success";
 import Search from "./pages/search";
 import UpdatePost from "./pages/update_post";
 import NotFound from "./pages/404";
-import Dashboard from "./pages/dashboard"; // ✅ Import Dashboard
+import Dashboard from "./pages/dashboard"; // ✅ Dashboard Component
+import Profile from './pages/Profile';
 
 // Layout Components
 import Navigation from "./components/layout/Navigation";
 
-// Navigation Wrapper
+// Lazy load components
+const HomePage = lazy(() => import('./pages/Home'));
+const LoginPage = lazy(() => import('./pages/Login'));
+const SignupPage = lazy(() => import('./pages/Signup'));
+const CreatePostComponent = lazy(() => import('./components/post/CreatePost'));
+
+// ✅ Loader Component for smoother transitions
+const Loader = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
+// ✅ Navigation Wrapper for Protected Pages
 const NavigationWithOutlet = () => (
   <Navigation>
     <Outlet />
   </Navigation>
 );
 
-// Protected Route Wrapper (Requires Authentication)
+// ✅ Protected Route Wrapper (Requires Authentication)
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div>Loading...</div>;
-
+  if (isLoading) return <Loader />;
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-// Public Route Wrapper (Accessible only when NOT logged in)
+// ✅ Public Route Wrapper (Accessible only when NOT logged in)
 const PublicRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div>Loading...</div>;
-
+  if (isLoading) return <Loader />;
   return user ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
-// Main Routes Configuration
+// ✅ Main Routes Configuration
 export const routes = [
   // Public Routes (Login & Signup)
   {
     path: "/login",
     element: (
       <PublicRoute>
-        <Login />
+        <LoginPage />
       </PublicRoute>
     ),
   },
@@ -64,7 +77,7 @@ export const routes = [
     path: "/signup",
     element: (
       <PublicRoute>
-        <Signup />
+        <SignupPage />
       </PublicRoute>
     ),
   },
@@ -82,8 +95,8 @@ export const routes = [
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Home /> },
-      { path: "dashboard", element: <Dashboard /> }, // ✅ Added Dashboard Route
+      { index: true, element: <HomePage /> }, // ✅ Home Page
+      { path: "dashboard", element: <Dashboard /> }, // ✅ Dashboard
       { path: "friends", element: <Friends /> },
       { path: "search", element: <Search /> },
 
@@ -102,9 +115,10 @@ export const routes = [
       {
         path: "profile",
         children: [
+          { index: true, element: <Profile /> },
           { path: "create", element: <CreateUserProfile /> },
           { path: "edit", element: <EditProfilePage /> },
-          { path: ":userId", element: <OtherProfile /> },
+          { path: ":userId", element: <OtherProfile /> }, // ✅ User Profile by ID
         ],
       },
 
@@ -121,9 +135,15 @@ export const routes = [
     path: "*",
     element: <NotFound />,
   },
+
+  // New routes
+  {
+    path: '/create-post',
+    element: <Navigation><CreatePostComponent /></Navigation>,
+  },
 ];
 
-// Helper function to generate breadcrumbs
+// ✅ Helper function to generate breadcrumbs
 export const getBreadcrumbs = (pathname) => {
   const paths = pathname.split("/").filter(Boolean);
   return paths.map((path, index) => {
@@ -136,7 +156,7 @@ export const getBreadcrumbs = (pathname) => {
   });
 };
 
-// Helper function to check if a route exists
+// ✅ Helper function to check if a route exists
 export const routeExists = (path) => {
   const findRoute = (routes, targetPath) => {
     for (const route of routes) {
@@ -151,5 +171,13 @@ export const routeExists = (path) => {
 
   return findRoute(routes, path);
 };
+
+// Create a simple placeholder for CreatePost until we have the component
+const CreatePost = () => (
+  <div className="p-8">
+    <h1 className="text-2xl font-bold mb-4">Create Post</h1>
+    <p>Create post component will be implemented here.</p>
+  </div>
+);
 
 export default routes;

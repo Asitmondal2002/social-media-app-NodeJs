@@ -1,6 +1,6 @@
 import { useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import AuthContext from "../context/AuthContext";
 import api from "../services/api";
 import toast from "react-hot-toast";
 
@@ -145,3 +145,5 @@ export const useAuth = () => {
     refreshUser,
   };
 };
+
+export default useAuth;

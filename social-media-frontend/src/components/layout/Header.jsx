@@ -1,6 +1,6 @@
 // src/components/layout/Header.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 import Button from "../../components/common/Button";
 import Avatar from "../../components/common/Avatar";
 
@@ -19,6 +19,9 @@ const Header = () => {
           <div className="flex items-center gap-4">
             {user ? (
               <>
+                <Link to="/create-post">
+                  <Button variant="primary">Create Post</Button>
+                </Link>
                 <Link to="/search">
                   <Button variant="outline">Search</Button>
                 </Link>
