@@ -1,17 +1,11 @@
-import React from "react";
-import { Suspense } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useRoutes,
-} from "react-router-dom";
+import React, { Suspense, useEffect } from "react";
+import { BrowserRouter as Router, useRoutes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-//import { QueryClient, QueryClientProvider } from "react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Loader } from "./components/common/Loader";
 import routes from "./routes";
+import api from './services/api';
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -65,6 +59,16 @@ class ErrorBoundary extends React.Component {
 }
 
 const AppContent = () => {
+  const { user } = useAuth();
+  
+  // Set up auth token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, []);
+  
   const element = useRoutes(routes);
   return (
     <Suspense
@@ -81,31 +85,34 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <ErrorBoundary>
-            <div className="min-h-screen bg-gray-50">
-              <AppContent />
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  className: "text-sm",
-                  success: {
-                    className:
-                      "bg-green-50 text-green-800 border border-green-100",
-                  },
-                  error: {
-                    className: "bg-red-50 text-red-800 border border-red-100",
-                  },
-                }}
-              />
-            </div>
-          </ErrorBoundary>
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>
+            <ErrorBoundary>
+              <div className="min-h-screen bg-gray-50">
+                <AppContent />
+                {/* Toaster for notifications */}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    className: "text-sm",
+                    success: {
+                      className:
+                        "bg-green-50 text-green-800 border border-green-100",
+                    },
+                    error: {
+                      className: "bg-red-50 text-red-800 border border-red-100",
+                    },
+                  }}
+                />
+              </div>
+            </ErrorBoundary>
+          </Router>
+        </AuthProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 

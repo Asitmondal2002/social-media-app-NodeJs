@@ -3,30 +3,33 @@ import PropTypes from "prop-types";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
 import toast from "react-hot-toast";
+import { Loader } from "../components/common/Loader";
 
 const Friends = () => {
   const { user } = useAuth();
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (user) fetchFriends();
+    const fetchFriends = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const response = await api.get(`/api/users/${user.id}/friends`);
+        setFriends(response.data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+        setError('Failed to load friends. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFriends();
   }, [user]);
-
-  const fetchFriends = async () => {
-    if (!user) return;
-
-    try {
-      const { data } = await api.get(`/users/${user.id}/friends`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setFriends(data);
-    } catch (error) {
-      toast.error("Failed to fetch friends.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleUnfriend = async (friendId) => {
     if (!user) return;

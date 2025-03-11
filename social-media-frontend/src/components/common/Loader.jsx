@@ -11,8 +11,10 @@ export const Loader = ({ size = "medium" }) => {
   return (
     <div className="flex justify-center items-center">
       <div
-        className={`${sizeClasses[size]} border-4 border-gray-200 border-t-primary rounded-full animate-spin`}
+        className={`${sizeClasses[size]} border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin`}
       />
     </div>
   );
 };
+
+export default Loader;

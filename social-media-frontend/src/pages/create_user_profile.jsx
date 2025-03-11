@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -12,23 +12,40 @@ const CreateUserProfile = () => {
     bio: "",
     avatar: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = useCallback((e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }, []);
+
+  const validateAvatar = (url) => {
+    return url.match(/\.(jpeg|jpg|png|gif|webp)$/i);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post("/users/profile", formData);
-      toast.success("Profile created successfully!");
-      navigate("/profile");
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message || "Failed to create profile";
-      toast.error(errorMessage);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (formData.avatar && !validateAvatar(formData.avatar)) {
+        toast.error("Invalid avatar URL. Use a valid image link.");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        await api.post("/users/profile", formData);
+        toast.success("Profile created successfully!");
+        navigate("/profile");
+      } catch (error) {
+        console.error("Error creating profile:", error);
+        const errorMessage =
+          error?.response?.data?.message || "Failed to create profile";
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [formData, navigate]
+  );
 
   return (
     <div className="container mx-auto p-4 max-w-md">
@@ -60,9 +77,14 @@ const CreateUserProfile = () => {
         />
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded"
+          className={`w-full p-2 rounded ${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 text-white"
+          }`}
+          disabled={isLoading}
         >
-          Create Profile
+          {isLoading ? "Creating..." : "Create Profile"}
         </button>
       </form>
     </div>
