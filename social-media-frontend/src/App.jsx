@@ -1,11 +1,9 @@
-import React, { Suspense, useEffect } from "react";
-import { BrowserRouter as Router, useRoutes } from "react-router-dom";
+import React from "react";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { Loader } from "./components/common/Loader";
-import routes from "./routes";
-import api from './services/api';
+import { AuthProvider } from "./context/AuthContext";
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -58,61 +56,16 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const AppContent = () => {
-  const { user } = useAuth();
-  
-  // Set up auth token on component mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-  }, []);
-  
-  const element = useRoutes(routes);
-  return (
-    <Suspense
-      fallback={
-        <div className="h-screen w-screen flex items-center justify-center">
-          <Loader size="large" />
-        </div>
-      }
-    >
-      {element}
-    </Suspense>
-  );
-};
-
 const App = () => {
   return (
-    <React.StrictMode>
+    <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Router>
-            <ErrorBoundary>
-              <div className="min-h-screen bg-gray-50">
-                <AppContent />
-                {/* Toaster for notifications */}
-                <Toaster
-                  position="top-right"
-                  toastOptions={{
-                    duration: 4000,
-                    className: "text-sm",
-                    success: {
-                      className:
-                        "bg-green-50 text-green-800 border border-green-100",
-                    },
-                    error: {
-                      className: "bg-red-50 text-red-800 border border-red-100",
-                    },
-                  }}
-                />
-              </div>
-            </ErrorBoundary>
-          </Router>
+          <RouterProvider router={router} />
+          <Toaster position="top-right" />
         </AuthProvider>
       </QueryClientProvider>
-    </React.StrictMode>
+    </ErrorBoundary>
   );
 };
 
